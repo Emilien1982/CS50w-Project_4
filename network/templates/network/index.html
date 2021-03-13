@@ -19,8 +19,15 @@
                 <h2>{{ post.author.username}}</h2>
                 <a href="#">Edit</a>
                 <p>{{ post.text }}</p>
-                <p>{{ post.time_create }}</p>
-                <!-- A COMPLETER -->
+                <p>{{ post.time_creation }}</p>
+                <!-- POST LIKES DEVRAIT ETRE LE NOMBRE DE LIKE -->
+                <p>❤️ {% if post.likes %}
+                        {{post.likes}}
+                     {% else %}
+                        0
+                     {% endif %}
+                </p>
+                <!-- A COMPLETER  avec comment ???-->
             </div>
         {%endfor%}
     </div>

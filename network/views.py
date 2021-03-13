@@ -17,7 +17,10 @@ def index(request):
         new_post.save()
         return HttpResponseRedirect(reverse("index"))
     else:
-        return render(request, "network/index.html")
+        posts = Post.objects.all()
+        return render(request, "network/index.html", {
+            "posts": posts
+        })
 
 
 def login_view(request):

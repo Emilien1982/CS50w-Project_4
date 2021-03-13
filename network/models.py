@@ -10,4 +10,4 @@ class Post(models.Model):
     text = models.CharField(max_length=280)
     time_creation = models.DateTimeField(auto_now_add=True)
     time_last_update = models.DateTimeField(auto_now=True)
-    likes = models.ForeignKey(User, on_delete=models.CASCADE, related_name="liker", null=True)
+    likes = models.ForeignKey(User, on_delete=models.CASCADE, related_name="liker", null=True, unique=True)
