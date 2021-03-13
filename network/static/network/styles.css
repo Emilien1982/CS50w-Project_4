@@ -1,0 +1,14 @@
+
+
+.content {
+    padding: 16px;
+}
+
+.post{
+    border: 1px solid lightgray;
+    padding: 1em;
+}
+
+.post textarea {
+    width: 100%;
+}

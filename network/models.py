@@ -8,10 +8,6 @@ class User(AbstractUser):
 class Post(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="author")
     text = models.CharField(max_length=280)
-    time_creation = models.DateTimeField()
-    time_last_update = models.DateTimeField()
-    likes = models.ForeignKey(User, on_delete=models.CASCADE, related_name="liker")
-
-class Follower(models.Model):
-    follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name="follower")
-    followed = models.ForeignKey(User, on_delete=models.CASCADE, related_name="followed")
+    time_creation = models.DateTimeField(auto_now_add=True)
+    time_last_update = models.DateTimeField(auto_now=True)
+    likes = models.ForeignKey(User, on_delete=models.CASCADE, related_name="liker", null=True)
