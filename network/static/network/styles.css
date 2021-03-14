@@ -7,8 +7,14 @@
 .post{
     border: 1px solid lightgray;
     padding: 1em;
+    margin-bottom: 1rem;
 }
 
 .post textarea {
     width: 100%;
+}
+
+.post_time {
+    font-size: 0.8em;
+    color: rgb(110, 110, 110);
 }

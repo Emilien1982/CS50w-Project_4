@@ -17,7 +17,7 @@ def index(request):
         new_post.save()
         return HttpResponseRedirect(reverse("index"))
     else:
-        posts = Post.objects.all()
+        posts = Post.objects.all().order_by("time_last_update").reverse()
         return render(request, "network/index.html", {
             "posts": posts
         })
@@ -73,3 +73,31 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "network/register.html")
+
+
+def profile(request, profile_id):
+    visited_user = User.objects.get(pk=profile_id)
+    visitor = request.user
+    followers = visited_user.followers.count()
+    ##VERIFIER QUE LA SELECTION CI DESSOUS FONCTIONNE BIEN QUAND LA FEATURE "FOLLOW" SERA OK
+    followings = User.objects.filter(followers=visited_user).count()
+    posts = visited_user.author.order_by("time_last_update").reverse()
+    # Check if the logged user is the owner of the visited profile
+    # and if the logged user follows the owner of the visited profile
+    is_same_user = True
+    is_following = False
+    print("AAAAAAAAAAAAAAAAABBBBB: ", visited_user.followers.count() )
+    if visitor != visited_user:
+        is_same_user = False
+        if visited_user.followers.count() != 0:
+            ##VERIFIER QUE LA CONDITION CI DESSOUS FONCTIONNE BIEN QUAND LA FEATURE "FOLLOW" SERA OK
+            if visitor in visited_user.followers:
+                is_following = True
+    return render(request, "network/profile.html", {
+        "visited_user": visited_user,
+        "followers": followers,
+        "followings": followings,
+        "posts": posts,
+        "is_same_user": is_same_user,
+        "is_following": is_following
+    })
