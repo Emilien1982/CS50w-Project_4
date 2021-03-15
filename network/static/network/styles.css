@@ -18,3 +18,8 @@
     font-size: 0.8em;
     color: rgb(110, 110, 110);
 }
+
+.pagination {
+    margin: 0 auto;
+    width: max-content;
+}

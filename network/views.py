@@ -4,24 +4,25 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.core.paginator import Paginator
 
 from .models import User, Post
 
 
 def index(request):
     if request.method == "POST":
-
         # Get the new post's text
         text = request.POST["text"]
         author = User.objects.get(pk=request.user.id)
         new_post = Post(author=author, text=text)
         new_post.save()
         return HttpResponseRedirect(reverse("index"))
+
     else:
-        posts = Post.objects.all().order_by("time_last_update").reverse()
+        posts_page = get_posts_page(request, "all")
         return render(request, "network/index.html", {
             "h1": "All Posts",
-            "posts": posts,
+            "posts": posts_page,
             "display_new_post": True
         })
 
@@ -79,11 +80,11 @@ def register(request):
 
 @login_required
 def profile(request, user_id):
-    visited_user = User.objects.get(pk=user_id)
     visitor = request.user
+    visited_user = User.objects.get(pk=user_id)
     followers = visited_user.followers.count()
     followings = User.objects.filter(followers=visited_user).count()
-    posts = visited_user.author.order_by("time_last_update").reverse()
+    posts_page = get_posts_page(request, user_id)
     # Check if the logged user is the owner of the visited profile
     # and if the logged user follows the owner of the visited profile
     is_same_user = True
@@ -98,7 +99,7 @@ def profile(request, user_id):
         "visited_user": visited_user,
         "followers": followers,
         "followings": followings,
-        "posts": posts,
+        "posts": posts_page,
         "is_same_user": is_same_user,
         "is_following": is_following
     })
@@ -107,10 +108,12 @@ def profile(request, user_id):
 def following(request):
     user = request.user
     followed = User.objects.filter(followers=user)
-    posts = Post.objects.filter(author__in=followed).order_by("time_last_update").reverse()
+    print("TTTTTYYYYPPPPEEEE: ",type(followed))
+    #posts = Post.objects.filter(author__in=followed).order_by("time_last_update").reverse()
+    posts_page = get_posts_page(request, followed)
     return render(request, "network/index.html", {
         "h1": "Following",
-        "posts": posts,
+        "posts": posts_page,
         "display_new_post": False
         })
 
@@ -127,7 +130,6 @@ def follow_toggle(request, user_id):
         if visitor == follower:
             is_following = True
 
-    print("is_following: ", is_following)
     # 2nd update the visited_user.followers according
     if is_following:
         visited_user.followers.remove(visitor)
@@ -135,3 +137,21 @@ def follow_toggle(request, user_id):
         visited_user.followers.add(visitor)
     visited_user.save()
     return HttpResponse(status=204)
+
+
+def get_posts_page(request, user_id):
+    # get all the posts according the user_id or all users
+    if user_id == "all":
+        posts = Post.objects.all().order_by("time_last_update").reverse()
+    elif type(user_id) == type(User.objects.filter(followers=1)):
+        # COMPARAISON DE TYPE PAS BELLE !!!
+        posts = Post.objects.filter(author__in=user_id).order_by("time_last_update").reverse()
+    else:
+        visited_user = User.objects.get(pk=user_id)
+        posts = visited_user.author.order_by("time_last_update").reverse()
+    # paginate the posts object
+    posts_paginated = Paginator(posts, 3)
+    # get the page number  defaut is 1
+    page_number = int(request.GET.get("page", 1))
+    # return the right posts page
+    return posts_paginated.get_page(page_number)
