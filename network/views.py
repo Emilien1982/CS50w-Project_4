@@ -75,29 +75,58 @@ def register(request):
         return render(request, "network/register.html")
 
 
-def profile(request, profile_id):
-    visited_user = User.objects.get(pk=profile_id)
+def profile(request, user_id):
+    visited_user = User.objects.get(pk=user_id)
     visitor = request.user
-    followers = visited_user.followers.count()
-    ##VERIFIER QUE LA SELECTION CI DESSOUS FONCTIONNE BIEN QUAND LA FEATURE "FOLLOW" SERA OK
-    followings = User.objects.filter(followers=visited_user).count()
-    posts = visited_user.author.order_by("time_last_update").reverse()
-    # Check if the logged user is the owner of the visited profile
-    # and if the logged user follows the owner of the visited profile
-    is_same_user = True
+    if request.method == "POST":
+        """ is_following = request.POST["is_following"]
+        if is_following :
+            # Unfollow
+            visited_user.followers_set.remove(visitor)
+        else :
+            # Follow
+            visited_user.followers.add(visitor)
+        visited_user.save()
+        return HttpResponseRedirect(reverse("profile", args=[user_id])) """
+    else :
+        followers = visited_user.followers.count()
+        ##VERIFIER QUE LA SELECTION CI DESSOUS FONCTIONNE BIEN QUAND LA FEATURE "FOLLOW" SERA OK
+        followings = User.objects.filter(followers=visited_user).count()
+        posts = visited_user.author.order_by("time_last_update").reverse()
+        # Check if the logged user is the owner of the visited profile
+        # and if the logged user follows the owner of the visited profile
+        is_same_user = True
+        is_following = False
+        if visitor != visited_user:
+            is_same_user = False
+            if followers != 0:
+                ##VERIFIER QUE LA CONDITION CI DESSOUS FONCTIONNE BIEN QUAND LA FEATURE "FOLLOW" SERA OK
+                for follower in visited_user.followers.all():
+                    if visitor == follower:
+                        is_following = True
+        return render(request, "network/profile.html", {
+            "visited_user": visited_user,
+            "followers": followers,
+            "followings": followings,
+            "posts": posts,
+            "is_same_user": is_same_user,
+            "is_following": is_following
+        })
+
+def follow_toggle(request, user_id):
+    visited_user = User.objects.get(pk=user_id)
+    visitor = request.user
+    # 1st find id the visitor was following the visited_user
     is_following = False
-    print("AAAAAAAAAAAAAAAAABBBBB: ", visited_user.followers.count() )
-    if visitor != visited_user:
-        is_same_user = False
-        if visited_user.followers.count() != 0:
-            ##VERIFIER QUE LA CONDITION CI DESSOUS FONCTIONNE BIEN QUAND LA FEATURE "FOLLOW" SERA OK
-            if visitor in visited_user.followers:
-                is_following = True
-    return render(request, "network/profile.html", {
-        "visited_user": visited_user,
-        "followers": followers,
-        "followings": followings,
-        "posts": posts,
-        "is_same_user": is_same_user,
-        "is_following": is_following
-    })
+    for follower in visited_user.followers.all():
+        if visitor == follower:
+            is_following = True
+
+    print("is_following: ", is_following)
+    # 2nd update the visited_user.followers according
+    if is_following:
+        visited_user.followers.remove(visitor)
+    else: 
+        visited_user.followers.add(visitor)
+    visited_user.save()
+    return HttpResponse(status=204)
