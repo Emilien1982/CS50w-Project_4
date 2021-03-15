@@ -18,7 +18,7 @@
         <!-- Display all posts of everyones -->
         {% for post in posts %}
             <div class="post">
-                <h2>{{ post.author.username }}</h2>
+                <a href="{% url 'profile' post.author.id %}"><h2>{{ post.author.username }}</h2></a>
                 <a href="#">Edit</a>
                 <p>{{ post.text }}</p>
                 <p class="post_time">{{ post.time_creation }}</p>

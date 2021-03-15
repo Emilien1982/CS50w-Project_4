@@ -8,12 +8,16 @@
             <!-- data-visited_id is useful for the js file -->
             {% if user.is_authenticated and not is_same_user %}
                 
+                    <!-- Don't refacto the code below - 
+                         inserting the if condition in the innerHTML 
+                        of the button include weird spacing around the text
+                        which would makes the js code to complicated -->
                     {% if is_following %}
                         <button id="follow_btn" class="btn btn-primary">Unfollow</button>
                     {% else %}
                         <button id="follow_btn" class="btn btn-primary">Follow</button>
                     {% endif %}
-
+                    
             {% endif %}
             <div class="connections">
                 <p>Followed by: <span id="followers_count">{{ followers }}</span> person(s)</p>
