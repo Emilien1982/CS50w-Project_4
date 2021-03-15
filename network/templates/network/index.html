@@ -2,9 +2,9 @@
 
 {% block body %}
     <div class="content">
-        <h1>All Posts</h1>
+        <h1>{{h1}}</h1>
         <!-- First, if logged in, disply a form to submit a new post -->
-        {% if user.is_authenticated %}
+        {% if user.is_authenticated and display_new_post%}
         <div class="post">
             <h2>New Post</h2>
             <form action="{% url 'index' %}" method="POST">

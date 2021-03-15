@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
@@ -19,7 +20,9 @@ def index(request):
     else:
         posts = Post.objects.all().order_by("time_last_update").reverse()
         return render(request, "network/index.html", {
-            "posts": posts
+            "h1": "All Posts",
+            "posts": posts,
+            "display_new_post": True
         })
 
 
@@ -74,7 +77,7 @@ def register(request):
     else:
         return render(request, "network/register.html")
 
-
+@login_required
 def profile(request, user_id):
     visited_user = User.objects.get(pk=user_id)
     visitor = request.user
@@ -99,6 +102,21 @@ def profile(request, user_id):
         "is_same_user": is_same_user,
         "is_following": is_following
     })
+
+@login_required
+def following(request):
+    user = request.user
+    followed = User.objects.filter(followers=user)
+    posts = Post.objects.filter(author__in=followed).order_by("time_last_update").reverse()
+    return render(request, "network/index.html", {
+        "h1": "Following",
+        "posts": posts,
+        "display_new_post": False
+        })
+
+
+
+##### API features:
 
 def follow_toggle(request, user_id):
     visited_user = User.objects.get(pk=user_id)
