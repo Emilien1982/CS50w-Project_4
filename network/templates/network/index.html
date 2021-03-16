@@ -1,54 +1,90 @@
 {% extends "network/layout.html" %}
+{% load static %}
 
 {% block body %}
-    <div class="content">
-        <h1>{{h1}}</h1>
-        <!-- First, if logged in, disply a form to submit a new post -->
-        {% if user.is_authenticated and display_new_post%}
-        <div class="post">
-            <h2>New Post</h2>
-            <form action="{% url 'index' %}" method="POST">
-                {% csrf_token %}
-                <textarea class="post-textarea" type="text" name="text" placeholder="Posts are 280 characters max" maxlength="280" required></textarea>
-                <br>
-                <button type="submit" class="btn btn-primary">Post</button>
-            </form>
+    {% if h1 == "All Posts" or h1 == "Following" %}
+        <div class="content-index">
+            <h1>{{h1}}</h1>
         </div>
-        {% endif %}
-        <!-- Display all posts of everyones -->
-        {% for post in posts %}
-            <div class="post">
-                <a href="{% url 'profile' post.author.id %}"><h2>{{ post.author.username }}</h2></a>
-                {% if post.author == user %}
-                    <a href="#">Edit</a>
+    {% endif %}
+
+    {% if h1 == "profile" %}
+        <div class="content-profile">
+            <div class="user_info">
+                <h1 data-visited_id="{{ visited_user.id }}">{{ visited_user.username }} profile page</h1>
+                <!-- data-visited_id is useful for the js file -->
+                {% if user.is_authenticated and not is_same_user %}
+                    
+                        <!-- Don't refacto the code below - 
+                            inserting the if condition in the innerHTML 
+                            of the button include weird spacing around the text
+                            which would makes the js code to complicated -->
+                        {% if is_following %}
+                            <button id="follow_btn" class="btn btn-primary">Unfollow</button>
+                        {% else %}
+                            <button id="follow_btn" class="btn btn-primary">Follow</button>
+                        {% endif %}
+                        
                 {% endif %}
-                <p>{{ post.text }}</p>
-                <p class="post_time">{{ post.time_creation }}</p>
-                <!-- POST.LIKES DEVRAIT ETRE LE NOMBRE DE LIKE -->
-                <p>❤️ {% if post.likes %}
-                        {{ post.likes }}
-                     {% else %}
-                        0
-                     {% endif %}
-                </p>
-                <!-- A COMPLETER  avec comment ???-->
+                <div class="connections">
+                    <p>Followed by: <span id="followers_count">{{ followers }}</span> person(s)</p>
+                    <p>Following: {{ followings }} person(s)</p>
+                </div>
             </div>
-        {% endfor %}
-        <div class="pagination">
-            <span class="step-links">
-                {% if posts.has_previous %}
-                    <a href="?page=1">&laquo; first</a>
-                    <a href="?page={{ posts.previous_page_number }}">previous</a>
-                {% endif %}
-        
-                <span class="current">
-                    Page {{ posts.number }} of {{ posts.paginator.num_pages }}.
-                </span>
-                {% if posts.has_next %}
-                    <a href="?page={{ posts.next_page_number }}">next</a>
-                    <a href="?page={{ posts.paginator.num_pages }}">last &raquo;</a>
-                {% endif %}
-            </span>
         </div>
+    {% endif %}
+
+    <!-- First, if logged in, disply a form to submit a new post -->
+    {% if user.is_authenticated and display_new_post%}
+    <div class="post">
+        <h2>New Post</h2>
+        <form action="{% url 'index' %}" method="POST">
+            {% csrf_token %}
+            <textarea class="post-textarea" type="text" name="text" placeholder="Posts are 280 characters max" maxlength="280" required></textarea>
+            <br>
+            <button type="submit" class="btn btn-primary">Post</button>
+        </form>
     </div>
+    {% endif %}
+
+
+    <!-- Display all posts of everyones -->
+    {% for post in posts %}
+        <div class="post">
+            <a href="{% url 'profile' post.author.id %}"><h2>{{ post.author.username }}</h2></a>
+            {% if post.author == user %}
+                <a class="edit-links" data-post_id="{{ post.id }}">Edit</a>
+            {% endif %}
+            <p>{{ post.text }}</p>
+            <p class="post_time">{{ post.time_creation }}</p>
+            <!-- POST.LIKES DEVRAIT ETRE LE NOMBRE DE LIKE -->
+            <p>❤️ {% if post.likes %}
+                    {{ post.likes }}
+                    {% else %}
+                    0
+                    {% endif %}
+            </p>
+            <!-- A COMPLETER  avec comment ???-->
+        </div>
+    {% endfor %}
+    <div class="pagination">
+        <span class="step-links">
+            {% if posts.has_previous %}
+                <a href="?page=1">&laquo; first</a>
+                <a href="?page={{ posts.previous_page_number }}">previous</a>
+            {% endif %}
+    
+            <span class="current">
+                Page {{ posts.number }} of {{ posts.paginator.num_pages }}.
+            </span>
+            {% if posts.has_next %}
+                <a href="?page={{ posts.next_page_number }}">next</a>
+                <a href="?page={{ posts.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'network/index.js' %}"></script>
 {% endblock %}

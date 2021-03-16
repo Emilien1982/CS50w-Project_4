@@ -26,7 +26,7 @@ def index(request):
         return render(request, "network/index.html", {
             "h1": "All Posts",
             "posts": posts_page,
-            "display_new_post": True
+            "display_new_post": True,
         })
 
 
@@ -98,13 +98,14 @@ def profile(request, user_id):
             for follower in visited_user.followers.all():
                 if visitor == follower:
                     is_following = True
-    return render(request, "network/profile.html", {
+    return render(request, "network/index.html", {
         "visited_user": visited_user,
         "followers": followers,
         "followings": followings,
         "posts": posts_page,
         "is_same_user": is_same_user,
-        "is_following": is_following
+        "is_following": is_following,
+        "h1": "profile"
     })
 
 @login_required
@@ -115,7 +116,7 @@ def following(request):
     return render(request, "network/index.html", {
         "h1": "Following",
         "posts": posts_page,
-        "display_new_post": False
+        "display_new_post": False,
         })
 
 

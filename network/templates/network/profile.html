@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block body %}
-    <div class="content">
+    <div class="content-profile">
         <div class="user_info">
             <h1 data-visited_id="{{ visited_user.id }}">{{ visited_user.username }} profile page</h1>
             <!-- data-visited_id is useful for the js file -->
@@ -24,6 +24,7 @@
                 <p>Following: {{ followings }} person(s)</p>
             </div>
         </div>
+    </div>
         <!-- Display all the user posts -->
         <div>
             {% for post in posts %}
@@ -61,7 +62,6 @@
                 </span>
             </div>
         </div>
-    </div>
 {% endblock %}
 
 {% block script %}
