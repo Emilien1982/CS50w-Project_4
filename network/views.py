@@ -1,5 +1,7 @@
+import json
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
@@ -7,6 +9,7 @@ from django.urls import reverse
 from django.core.paginator import Paginator
 
 from .models import User, Post
+
 
 
 def index(request):
@@ -108,8 +111,6 @@ def profile(request, user_id):
 def following(request):
     user = request.user
     followed = User.objects.filter(followers=user)
-    print("TTTTTYYYYPPPPEEEE: ",type(followed))
-    #posts = Post.objects.filter(author__in=followed).order_by("time_last_update").reverse()
     posts_page = get_posts_page(request, followed)
     return render(request, "network/index.html", {
         "h1": "Following",
@@ -119,8 +120,8 @@ def following(request):
 
 
 
-##### API features:
-
+########### API features:  ##############
+@login_required
 def follow_toggle(request, user_id):
     visited_user = User.objects.get(pk=user_id)
     visitor = request.user
@@ -139,8 +140,9 @@ def follow_toggle(request, user_id):
     return HttpResponse(status=204)
 
 
+@login_required
 def get_posts_page(request, user_id):
-    # get all the posts according the user_id or all users
+    # get all the posts according the need: all users, a list of followed users or a specific user_id
     if user_id == "all":
         posts = Post.objects.all().order_by("time_last_update").reverse()
     elif type(user_id) == type(User.objects.filter(followers=1)):
@@ -155,3 +157,16 @@ def get_posts_page(request, user_id):
     page_number = int(request.GET.get("page", 1))
     # return the right posts page
     return posts_paginated.get_page(page_number)
+
+@csrf_exempt
+def post_update(request, post_id):
+    if request.method == "PUT":
+        post = Post.objects.get(pk=post_id)
+        new_content = json.loads(request.body)
+        post.text = new_content
+        post.save()
+        print(new_content)
+        return HttpResponse(status=204)
+
+
+##### CHANGER LA PAGINATION A 10 

@@ -29,12 +29,14 @@
             {% for post in posts %}
                 <div class="post">
                     <h2>{{ post.author.username}}</h2>
-                    <a href="#">Edit</a>
+                    {% if post.author == user %}
+                        <a class="edit-links" data-post_id="{{ post.id }}">Edit</a>
+                    {% endif %}
                     <p>{{ post.text }}</p>
                     <p class="post_time">{{ post.time_creation }}</p>
                     <!-- POST.LIKES DEVRAIT ETRE LE NOMBRE DE LIKE -->
                     <p>❤️ {% if post.likes %}
-                            {{post.likes}}
+                            {{ post.likes }}
                         {% else %}
                             0
                         {% endif %}
