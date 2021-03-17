@@ -1,4 +1,7 @@
 
+body {
+    margin: 0 1rem 3rem 1rem;
+}
 
 .content {
     padding: 16px;
@@ -8,6 +11,7 @@
     border: 1px solid lightgray;
     padding: 1em;
     margin-bottom: 1rem;
+
 }
 
 .post a{
@@ -16,15 +20,26 @@
 
 .post-textarea {
     width: 100%;
-    height: 7em;
+    min-height: 7em;
 }
 
 .post_time {
-    font-size: 0.8em;
+    font-size: 0.6em;
     color: rgb(110, 110, 110);
+    margin-bottom: 0.1rem;
 }
 
 .pagination {
     margin: 0 auto;
     width: max-content;
 }
+
+.like-count, .edit-links{
+    display: inline;
+    float: right;
+}
+
+.modified {
+    color: blue;
+}
+

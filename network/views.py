@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
@@ -11,13 +12,14 @@ from django.core.paginator import Paginator
 from .models import User, Post
 
 
-
 def index(request):
     if request.method == "POST":
         # Get the new post's text
         text = request.POST["text"]
         author = User.objects.get(pk=request.user.id)
         new_post = Post(author=author, text=text)
+        new_post.save()
+        new_post.time_last_update = new_post.time_creation
         new_post.save()
         return HttpResponseRedirect(reverse("index"))
 
@@ -26,7 +28,7 @@ def index(request):
         return render(request, "network/index.html", {
             "h1": "All Posts",
             "posts": posts_page,
-            "display_new_post": True,
+            "display_new_post": True
         })
 
 
@@ -81,7 +83,7 @@ def register(request):
     else:
         return render(request, "network/register.html")
 
-@login_required
+
 def profile(request, user_id):
     visitor = request.user
     visited_user = User.objects.get(pk=user_id)
@@ -98,6 +100,8 @@ def profile(request, user_id):
             for follower in visited_user.followers.all():
                 if visitor == follower:
                     is_following = True
+    display_new_post = is_same_user
+    # last line sound weird but usefull to block new post from another user profile
     return render(request, "network/index.html", {
         "visited_user": visited_user,
         "followers": followers,
@@ -105,6 +109,7 @@ def profile(request, user_id):
         "posts": posts_page,
         "is_same_user": is_same_user,
         "is_following": is_following,
+        "display_new_post": display_new_post,
         "h1": "profile"
     })
 
@@ -113,10 +118,12 @@ def following(request):
     user = request.user
     followed = User.objects.filter(followers=user)
     posts_page = get_posts_page(request, followed)
+    following_count = followed.count()
     return render(request, "network/index.html", {
         "h1": "Following",
         "posts": posts_page,
         "display_new_post": False,
+        "following_count": following_count
         })
 
 
@@ -141,7 +148,6 @@ def follow_toggle(request, user_id):
     return HttpResponse(status=204)
 
 
-@login_required
 def get_posts_page(request, user_id):
     # get all the posts according the need: all users, a list of followed users or a specific user_id
     if user_id == "all":
@@ -153,7 +159,7 @@ def get_posts_page(request, user_id):
         visited_user = User.objects.get(pk=user_id)
         posts = visited_user.author.order_by("time_last_update").reverse()
     # paginate the posts object
-    posts_paginated = Paginator(posts, 3)
+    posts_paginated = Paginator(posts, 10)
     # get the page number  defaut is 1
     page_number = int(request.GET.get("page", 1))
     # return the right posts page
@@ -165,9 +171,17 @@ def post_update(request, post_id):
         post = Post.objects.get(pk=post_id)
         new_content = json.loads(request.body)
         post.text = new_content
+        post.time_last_update = datetime.now()
         post.save()
-        print(new_content)
         return HttpResponse(status=204)
 
-
-##### CHANGER LA PAGINATION A 10 
+@csrf_exempt
+def like_toggle(request, post_id):
+    user = request.user
+    post = Post.objects.get(pk=post_id)
+    if user in post.likes.all():
+        post.likes.remove(user)
+    else:
+        post.likes.add(user)
+    post.save()
+    return HttpResponse(status=204)

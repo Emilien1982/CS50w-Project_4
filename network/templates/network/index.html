@@ -3,13 +3,14 @@
 
 {% block body %}
     {% if h1 == "All Posts" or h1 == "Following" %}
-        <div class="content-index">
+        <div class="content">
             <h1>{{h1}}</h1>
+            {% if following_count %}
+                <p>You are following {{ following_count }} person{{ following_count|pluralize }}</p>
+            {% endif %}
         </div>
-    {% endif %}
-
-    {% if h1 == "profile" %}
-        <div class="content-profile">
+    {% elif h1 == "profile" %}
+        <div class="content">
             <div class="user_info">
                 <h1 data-visited_id="{{ visited_user.id }}">{{ visited_user.username }} profile page</h1>
                 <!-- data-visited_id is useful for the js file -->
@@ -27,14 +28,14 @@
                         
                 {% endif %}
                 <div class="connections">
-                    <p>Followed by: <span id="followers_count">{{ followers }}</span> person(s)</p>
-                    <p>Following: {{ followings }} person(s)</p>
+                    <p>Followed by: <span id="followers_count">{{ followers }}</span> person{{ followers|pluralize }}</p>
+                    <p>Following: {{ followings }} person{{ followings|pluralize }}</p>
                 </div>
             </div>
         </div>
     {% endif %}
 
-    <!-- First, if logged in, disply a form to submit a new post -->
+    <!-- First, if logged in, display a form to submit a new post -->
     {% if user.is_authenticated and display_new_post%}
     <div class="post">
         <h2>New Post</h2>
@@ -48,25 +49,34 @@
     {% endif %}
 
 
-    <!-- Display all posts of everyones -->
+    <!-- Display all posts according the current page -->
     {% for post in posts %}
-        <div class="post">
+        <div class="post" data-post_id="{{ post.id }}">
             <a href="{% url 'profile' post.author.id %}"><h2>{{ post.author.username }}</h2></a>
             {% if post.author == user %}
-                <a class="edit-links" data-post_id="{{ post.id }}">Edit</a>
+                <a class="edit-links">Edit</a>
             {% endif %}
             <p>{{ post.text }}</p>
-            <p class="post_time">{{ post.time_creation }}</p>
-            <!-- POST.LIKES DEVRAIT ETRE LE NOMBRE DE LIKE -->
-            <p>❤️ {% if post.likes %}
-                    {{ post.likes }}
+            {% if post.time_last_update != post.time_creation %}
+                <p class="post_time update_time">Modified on {{ post.time_last_update }}</p>
+            {% endif%}
+            <p class="post_time">Created on {{ post.time_creation }}</p>
+            {% if user.is_authenticated %}
+                <button class="like-btn btn btn-outline-primary btn-sm" data-post_id="{{ post.id }}">
+                    {% if user in post.likes.all %}
+                     Unlike
                     {% else %}
-                    0
+                     Like
                     {% endif %}
+                </button>
+            {% endif %}
+            <p class="like-count">
+                ❤️ <span id="counter_{{ post.id }}">{{ post.likes.all|length }}</span>
             </p>
             <!-- A COMPLETER  avec comment ???-->
         </div>
     {% endfor %}
+
     <div class="pagination">
         <span class="step-links">
             {% if posts.has_previous %}

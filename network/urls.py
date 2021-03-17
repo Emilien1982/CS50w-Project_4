@@ -13,5 +13,6 @@ urlpatterns = [
 
     # API routes
     path("follow/<int:user_id>", views.follow_toggle, name="follow_toggle"),
-    path("post-update/<int:post_id>", views.post_update, name="post_update")
+    path("post-update/<int:post_id>", views.post_update, name="post_update"),
+    path("like/<int:post_id>", views.like_toggle, name="like_toggle")
 ]
