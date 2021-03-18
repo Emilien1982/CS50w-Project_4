@@ -1,21 +1,62 @@
 
+:root {
+    font-size: 16px;
+}
+
+@media (max-width: 575px) {
+    :root {
+        font-size: 14px;
+    }
+}
+
+a:hover {
+    opacity: 0.5;
+    text-decoration: none;
+}
+
+p {
+    font-size: 1rem;
+}
+
+h1 {
+    font-size: 2rem;
+    margin-bottom: 1.3rem;
+}
+
+h2 {
+    font-size: 1.5rem;
+}
+
+ul {
+    font-size: 1.1rem;
+}
+
+button {
+    font-size: 1.1rem;
+}
+
 body {
-    margin: 0 1rem 3rem 1rem;
+    margin: 0 auto 3rem auto;
+    width: 95%;
+    max-width: 1050px;
 }
 
 .content {
     padding: 16px;
 }
 
+.connections * {
+    margin-bottom: 0em;
+}
+
 .post{
     border: 1px solid lightgray;
     padding: 1em;
     margin-bottom: 1rem;
-
 }
 
 .post a{
-    color: hotpink;
+    color: #007BFF;
 }
 
 .post-textarea {
@@ -23,10 +64,21 @@ body {
     min-height: 7em;
 }
 
-.post_time {
-    font-size: 0.6em;
+.post_time, .update_time {
+    font-size: 0.6rem;
     color: rgb(110, 110, 110);
     margin-bottom: 0.1rem;
+}
+
+.post_time {
+    margin-bottom: 0.8rem;
+}
+
+.like-section {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .pagination {
@@ -34,7 +86,11 @@ body {
     width: max-content;
 }
 
-.like-count, .edit-links{
+.like-count {
+    margin-left: auto;
+}
+
+.edit-links, .user_info button{
     display: inline;
     float: right;
 }
@@ -42,4 +98,3 @@ body {
 .modified {
     color: blue;
 }
-

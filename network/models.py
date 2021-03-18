@@ -10,5 +10,5 @@ class Post(models.Model):
     text = models.CharField(max_length=280)
     time_creation = models.DateTimeField(auto_now_add=True)
     time_last_update = models.DateTimeField(null=True)
-    likes = models.ManyToManyField(User, related_name="liker", symmetrical=False, null=True)
+    likes = models.ManyToManyField(User, related_name="liker", symmetrical=False)
     

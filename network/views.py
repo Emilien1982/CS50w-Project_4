@@ -19,6 +19,10 @@ def index(request):
         author = User.objects.get(pk=request.user.id)
         new_post = Post(author=author, text=text)
         new_post.save()
+        # time_creation auto-incremente on 1st save.
+        # auto incrementing time_last_update appear some few microseconds after time_creation
+        # the difference between those to time have to be null to evaluate a never-edited post
+        # that why time_last_update is just copying time_creation on the first save
         new_post.time_last_update = new_post.time_creation
         new_post.save()
         return HttpResponseRedirect(reverse("index"))
@@ -85,31 +89,16 @@ def register(request):
 
 
 def profile(request, user_id):
-    visitor = request.user
     visited_user = User.objects.get(pk=user_id)
-    followers = visited_user.followers.count()
     followings = User.objects.filter(followers=visited_user).count()
     posts_page = get_posts_page(request, user_id)
-    # Check if the logged user is the owner of the visited profile
-    # and if the logged user follows the owner of the visited profile
-    is_same_user = True
-    is_following = False
-    if visitor != visited_user:
-        is_same_user = False
-        if followers != 0:
-            for follower in visited_user.followers.all():
-                if visitor == follower:
-                    is_following = True
-    display_new_post = is_same_user
     # last line sound weird but usefull to block new post from another user profile
     return render(request, "network/index.html", {
         "visited_user": visited_user,
-        "followers": followers,
         "followings": followings,
         "posts": posts_page,
-        "is_same_user": is_same_user,
-        "is_following": is_following,
-        "display_new_post": display_new_post,
+        "display_new_post": request.user == visited_user,
+        # allow new post only when the current user visit its how profile
         "h1": "profile"
     })
 
@@ -133,12 +122,12 @@ def following(request):
 def follow_toggle(request, user_id):
     visited_user = User.objects.get(pk=user_id)
     visitor = request.user
-    # 1st find id the visitor was following the visited_user
+    # 1st find if the visitor was following the visited_user
     is_following = False
     for follower in visited_user.followers.all():
         if visitor == follower:
             is_following = True
-
+            break
     # 2nd update the visited_user.followers according
     if is_following:
         visited_user.followers.remove(visitor)
@@ -165,6 +154,7 @@ def get_posts_page(request, user_id):
     # return the right posts page
     return posts_paginated.get_page(page_number)
 
+@login_required
 @csrf_exempt
 def post_update(request, post_id):
     if request.method == "PUT":
@@ -175,6 +165,7 @@ def post_update(request, post_id):
         post.save()
         return HttpResponse(status=204)
 
+@login_required
 @csrf_exempt
 def like_toggle(request, post_id):
     user = request.user

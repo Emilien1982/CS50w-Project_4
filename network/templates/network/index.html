@@ -12,23 +12,19 @@
     {% elif h1 == "profile" %}
         <div class="content">
             <div class="user_info">
-                <h1 data-visited_id="{{ visited_user.id }}">{{ visited_user.username }} profile page</h1>
                 <!-- data-visited_id is useful for the js file -->
-                {% if user.is_authenticated and not is_same_user %}
-                    
-                        <!-- Don't refacto the code below - 
-                            inserting the if condition in the innerHTML 
-                            of the button include weird spacing around the text
-                            which would makes the js code to complicated -->
-                        {% if is_following %}
-                            <button id="follow_btn" class="btn btn-primary">Unfollow</button>
+                {% if user.is_authenticated and user != visited_user %}
+                        <button id="follow_btn" class="btn btn-primary">
+                        {% if user in visited_user.followers.all %}
+                            Unfollow
                         {% else %}
-                            <button id="follow_btn" class="btn btn-primary">Follow</button>
+                            Follow
                         {% endif %}
-                        
+                    </button>
                 {% endif %}
+                <h1 data-visited_id="{{ visited_user.id }}">{{ visited_user.username }} profile page</h1>
                 <div class="connections">
-                    <p>Followed by: <span id="followers_count">{{ followers }}</span> person{{ followers|pluralize }}</p>
+                    <p>Followed by: <span id="followers_count">{{ visited_user.followers.count }}</span> <span id="counter_person">person{{ visited_user.followers.count|pluralize }}</span></p>
                     <p>Following: {{ followings }} person{{ followings|pluralize }}</p>
                 </div>
             </div>
@@ -36,7 +32,7 @@
     {% endif %}
 
     <!-- First, if logged in, display a form to submit a new post -->
-    {% if user.is_authenticated and display_new_post%}
+    {% if user.is_authenticated and display_new_post %}
     <div class="post">
         <h2>New Post</h2>
         <form action="{% url 'index' %}" method="POST">
@@ -52,28 +48,31 @@
     <!-- Display all posts according the current page -->
     {% for post in posts %}
         <div class="post" data-post_id="{{ post.id }}">
-            <a href="{% url 'profile' post.author.id %}"><h2>{{ post.author.username }}</h2></a>
+            
             {% if post.author == user %}
                 <a class="edit-links">Edit</a>
             {% endif %}
-            <p>{{ post.text }}</p>
+            <h2><a href="{% url 'profile' post.author.id %}">{{ post.author.username }}</a></h2>
+            <p id="post-content-{{ post.id }}">{{ post.text }}</p>
             {% if post.time_last_update != post.time_creation %}
-                <p class="post_time update_time">Modified on {{ post.time_last_update }}</p>
+                <p class="update_time">Modified on {{ post.time_last_update }}</p>
             {% endif%}
             <p class="post_time">Created on {{ post.time_creation }}</p>
-            {% if user.is_authenticated %}
-                <button class="like-btn btn btn-outline-primary btn-sm" data-post_id="{{ post.id }}">
-                    {% if user in post.likes.all %}
-                     Unlike
-                    {% else %}
-                     Like
-                    {% endif %}
-                </button>
-            {% endif %}
-            <p class="like-count">
-                ❤️ <span id="counter_{{ post.id }}">{{ post.likes.all|length }}</span>
-            </p>
-            <!-- A COMPLETER  avec comment ???-->
+            <div class="like-section">
+                {% if user.is_authenticated %}
+                    <button class="like-btn btn btn-outline-primary btn-sm" data-post_id="{{ post.id }}">
+                        {% if user in post.likes.all %}
+                        Unlike
+                        {% else %}
+                        Like
+                        {% endif %}
+                    </button>
+                {% endif %}
+
+                <p class="like-count">
+                    ❤️ <span id="counter_{{ post.id }}">{{ post.likes.all|length }}</span>
+                </p>
+            </div>
         </div>
     {% endfor %}
 
